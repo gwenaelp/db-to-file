@@ -1,28 +1,15 @@
 require('dotenv').config();
-console.log('connecting to', process.env.DATA_API_URL);
 
 const socket = require('socket.io-client')(process.env.DATA_API_URL);
 const filtr = require('filtr');
 const mkdirp = require('mkdirp');
 const fs = require('fs');
+const config = require(process.env.CONFIG_FILE);
 
 // Add a connect listener
 socket.on('connect', function(socket) {
   console.log('Connected!');
 });
-
-const config = {
-  rules: [{
-    collection: 'server-api-redirects',
-    rule: {},
-    destination: '/home/gwen/sources/testDbToFile/a.json',
-    inArray: true
-  }, {
-    collection: 'server-api-redirects',
-    rule: { route: 'mercutio' },
-    destination: '/home/gwen/sources/testDbToFile/mercutio.json'
-  }]
-};
 
 function checkRulesAndSync(doc) {
   for (var i = 0; i < config.rules.length; i++) {
