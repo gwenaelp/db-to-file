@@ -6,6 +6,9 @@ const mkdirp = require('mkdirp');
 const fs = require('fs');
 const jsonToEnv = require('json-to-env/lib/index');
 const config = require(process.env.CONFIG_FILE);
+const Handlebars = require('handlebars');
+
+console.log(process.env.CONFIG_FILE, config);
 
 // Add a connect listener
 socket.on('connect', function(socket) {
@@ -14,15 +17,16 @@ socket.on('connect', function(socket) {
 
 function checkRulesAndSync(doc, deleteDoc = false) {
   for (var i = 0; i < config.rules.length; i++) {
-    const query = filtr(config.rules[i].rule);
+    const rule = config.rules[i];
+    const query = filtr(rule.rule);
     if(query.test([doc]).length) {
-      let destination = config.rules[i].destination.split('/');
+      let destination = rule.destination.split('/');
       destination.pop();
       mkdirp.sync(destination.join('/'));
-      if(config.rules[i].inArray === true) {
+      if(rule.inArray === true) {
         let fileContent = [];
         try {
-          fileContent = JSON.parse(fs.readFileSync(config.rules[i].destination));
+          fileContent = JSON.parse(fs.readFileSync(rule.destination));
 
           if(fileContent.length === undefined || fileContent.push === undefined) {
             fileContent = [];
@@ -47,20 +51,32 @@ function checkRulesAndSync(doc, deleteDoc = false) {
           fileContent.push(doc);
         }
 
-        fs.writeFileSync(config.rules[i].destination, JSON.stringify(fileContent, null, 2));
+        fs.writeFileSync(rule.destination, JSON.stringify(fileContent, null, 2));
       } else {
         if(deleteDoc) {
-          fs.unlinkSync(config.rules[i].destination);
+          fs.unlinkSync(rule.destination);
         } else {
-          const destinationExtension = config.rules[i].destination.split('.').pop();
+          const destinationExtension = rule.destination.split('.').pop();
           let fileContent = doc;
+          console.log('destinationExtension', destinationExtension);
           if(destinationExtension === 'env') {
             fileContent = jsonToEnv.build('', fileContent, '', {});
           } else {
             fileContent = JSON.stringify(fileContent, null, 2);
           }
 
-          fs.writeFileSync(config.rules[i].destination, fileContent);
+          if(rule.key) {
+            if(!doc[rule.key]) {
+              return;
+            } else {
+              if(typeof doc[rule.key] === 'string') {
+                fileContent = doc[rule.key];
+              }
+            }
+          }
+          
+          const destinationTemplate = Handlebars.compile(rule.destination);
+          fs.writeFileSync(destinationTemplate(doc), fileContent);
         }
       }
     }
