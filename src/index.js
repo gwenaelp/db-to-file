@@ -74,7 +74,7 @@ function checkRulesAndSync(doc, deleteDoc = false) {
               }
             }
           }
-          
+
           const destinationTemplate = Handlebars.compile(rule.destination);
           fs.writeFileSync(destinationTemplate(doc), fileContent);
         }
@@ -85,16 +85,16 @@ function checkRulesAndSync(doc, deleteDoc = false) {
 
 socket.on('connect', () => {
   console.log('connected');
-  socket.on('created', (doc) => {
-    console.log('created!', doc);
-    checkRulesAndSync(doc);
+  socket.on('created', ({ document }) => {
+    console.log('created!', { document });
+    checkRulesAndSync(document);
   });
-  socket.on('updated', (doc) => { 
-    console.log('updated!', doc);
-    checkRulesAndSync(doc);
+  socket.on('updated', ({ document }) => {
+    console.log('updated!', { document });
+    checkRulesAndSync(document);
   });
-  socket.on('deleted', (doc) => { 
-    console.log('deleted!', doc);
-    checkRulesAndSync(doc);
+  socket.on('deleted', ({ document }) => {
+    console.log('deleted!', document);
+    checkRulesAndSync(document);
   });
 });
