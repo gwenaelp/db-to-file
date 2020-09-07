@@ -12,7 +12,7 @@
   "dependencies": {
     "dotenv": "^8.1.0",
     "filtr": "^0.3.0",
-    "handlebars": "^4.2.0",
+    "handlebars": "^4.5.3",
     "json-to-env": "git+https://github.com/BrokerageEngine/json-to-env.git",
     "mkdirp": "^0.5.1",
     "mongo-query": "^0.5.7",
